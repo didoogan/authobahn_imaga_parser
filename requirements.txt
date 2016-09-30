@@ -1,0 +1,7 @@
+autobahn==0.16.0
+pkg-resources==0.0.0
+redis==2.10.5
+six==1.10.0
+Twisted==16.4.1
+txaio==2.5.1
+zope.interface==4.3.2
