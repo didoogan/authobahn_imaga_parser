@@ -9,6 +9,7 @@ from autobahn.twisted.websocket import WebSocketServerProtocol, \
 class MyServerProtocol(WebSocketServerProtocol):
 
     def __init__(self):
+        # super(MyServerProtocol, self).__init__()
         self.r = redis.StrictRedis()
         self.p = self.r.pubsub()
 
@@ -43,7 +44,7 @@ class MyServerProtocol(WebSocketServerProtocol):
         def handler(message):
             # items = json.dumps(message['data'])
 
-            self.sendMessage(self.r.hgetall(user_request))
+            self.sendMessage(json.dumps(self.r.hgetall(user_request)))
             # print 'FUCK', message['data']
             # pass
 
