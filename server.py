@@ -19,43 +19,31 @@ class MyServerProtocol(WebSocketServerProtocol):
     def onOpen(self):
         print("WebSocket connection open.")
 
-        # def handler(message):
-        #     # items = json.dumps(message['data'])
-        #     # self.sendMessage(items)
-        #     # self.sendMessage(message['data'])
-        #     print 'FUCK'
-        #
-        # def handler_chanel(message):
-        #     print 'from handler_chanel ', message
-        #     # items = json.dumps(message['data'])
-        #     # self.sendMessage(items)
-        #     self.sendMessage(message['data'])
-        # self.p.subscribe(**{'flag': handler, 'chanel': handler_chanel})
-        # thread = self.p.run_in_thread(sleep_time=0.01)
-
     def onMessage(self, payload, isBinary):
         if isBinary:
             print("Binary message received: {0} bytes".format(len(payload)))
         else:
             print("Text message received: {0}".format(payload.decode('utf8')))
 
-        user_request = payload.decode('utf8')
+        user_request = json.loads(payload.decode('utf8'))
 
         def handler(message):
             # items = json.dumps(message['data'])
+            result = {'google': [], 'yandex': [], 'instagram': [], }
+            socket_engines = json.loads(user_request['engines'])
+            for engine in socket_engines:
+                result[engine] = self.r.hget(user_request['query'], engine)
+            self.sendMessage(json.dumps(result))
 
-            self.sendMessage(json.dumps(self.r.hgetall(user_request)))
-            # print 'FUCK', message['data']
-            # pass
-
-        def handler_chanel(message):
-            print 'from handler_chanel ', message
-            # items = json.dumps(message['data'])
-            # self.sendMessage(items)
-            # self.sendMessage(message['data'])
-            # print 'FUCK!!!!'
-            pass
-        self.p.subscribe(**{'flag': handler, user_request: handler_chanel})
+        # def handler_chanel(message):
+        # #     print 'from handler_chanel ', message
+        # #     # items = json.dumps(message['data'])
+        # #     # self.sendMessage(items)
+        # #     # self.sendMessage(message['data'])
+        # #     # print 'FUCK!!!!'
+        #     pass
+        # self.p.subscribe(**{'flag': handler, user_request: handler_chanel})
+        self.p.subscribe(**{'flag': handler})
         thread = self.p.run_in_thread(sleep_time=0.01)
 
         # echo back message verbatim
