@@ -9,7 +9,7 @@ from autobahn.twisted.websocket import WebSocketServerProtocol, \
 class MyServerProtocol(WebSocketServerProtocol):
 
     def __init__(self):
-        # super(MyServerProtocol, self).__init__()
+        super(MyServerProtocol, self).__init__()
         self.r = redis.StrictRedis()
         self.p = self.r.pubsub()
 
@@ -22,10 +22,11 @@ class MyServerProtocol(WebSocketServerProtocol):
     def onMessage(self, payload, isBinary):
         if isBinary:
             print("Binary message received: {0} bytes".format(len(payload)))
-        else:
-            print("Text message received: {0}".format(payload.decode('utf8')))
+        # else:
+        #     print("Text message received: {0}".format(payload.decode('utf8')))
 
-        user_request = json.loads(payload.decode('utf8'))
+        # user_request = json.loads(payload.decode('utf8'))
+        user_request = json.loads(payload)
 
         def handler(message):
             # items = json.dumps(message['data'])
@@ -34,20 +35,12 @@ class MyServerProtocol(WebSocketServerProtocol):
             for engine in socket_engines:
                 result[engine] = self.r.hget(user_request['query'], engine)
             self.sendMessage(json.dumps(result))
+            self.onClose()
 
-        # def handler_chanel(message):
-        # #     print 'from handler_chanel ', message
-        # #     # items = json.dumps(message['data'])
-        # #     # self.sendMessage(items)
-        # #     # self.sendMessage(message['data'])
-        # #     # print 'FUCK!!!!'
-        #     pass
-        # self.p.subscribe(**{'flag': handler, user_request: handler_chanel})
-        self.p.subscribe(**{'flag': handler})
+        # self.p.subscribe(flag=handler)
+        flag = user_request['query']
+        self.p.subscribe(**{flag: handler})
         thread = self.p.run_in_thread(sleep_time=0.01)
-
-        # echo back message verbatim
-        self.sendMessage(payload, isBinary)
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
