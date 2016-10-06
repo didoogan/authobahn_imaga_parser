@@ -35,7 +35,7 @@ class MyServerProtocol(WebSocketServerProtocol):
             for engine in socket_engines:
                 result[engine] = self.r.hget(user_request['query'], engine)
             self.sendMessage(json.dumps(result))
-            self.onClose()
+            self.sendClose(None, None)
 
         # self.p.subscribe(flag=handler)
         flag = user_request['query']
